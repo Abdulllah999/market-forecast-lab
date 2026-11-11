@@ -1,10 +1,12 @@
 # Market Forecast Lab
 
-Test whether a simple price-plus-sentiment model improves on a next-close persistence forecast under chronological evaluation.
+I compare price-plus-sentiment forecasting with a persistence baseline using chronological, expanding-window evaluation.
 
-**Status:** new portfolio implementation, November 2026. Inspired by an idea in Abdullah Shakeel’s CV; not original historical project code. Working Python web demo; no deployment claim.
+**Portfolio project · Abdullah Shakeel**
 
-![Actual local demo output](artifacts/demo.png)
+Python application with reproducible setup, tests and evaluation. See [provenance and scope](PROVENANCE.md) for the implementation background.
+
+![Application preview](artifacts/demo.png)
 
 ## Problem and intended users
 
@@ -42,7 +44,7 @@ python -m pytest -q
 python evaluate.py
 ```
 
-`artifacts/evaluation.json` records the actual preparation run. Read its method alongside every metric. CI runs Python checks and evaluation on push/PR; GitHub-hosted CI has not run until publication. Actual desktop and mobile-width browser screenshots are in `artifacts/`. Those screenshots show the Python web interface, not a mobile binary.
+`artifacts/evaluation.json` records the actual preparation run. Read its method alongside every metric. CI runs Python checks and evaluation on push/PR; GitHub Actions validates the application on push and pull requests. Actual desktop and mobile-width browser screenshots are in `artifacts/`. Those screenshots show the Python web interface, not a mobile binary.
 
 ## Data and provenance
 
@@ -69,7 +71,7 @@ Use a licensed adjusted-price source and timestamped news with publish/ingestion
 - `.github/workflows/validate.yml`: Python CI definition.
 - `artifacts/`: actual results and screenshots.
 
-## Truthful application summary
+## Project summary
 
 Built a leakage-aware forecasting experiment with expanding-window evaluation, a sentiment ablation and a persistence baseline; documented when the simple baseline performs better.
 

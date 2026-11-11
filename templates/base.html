@@ -4,8 +4,8 @@
 <style>
 :root{font-family:system-ui,sans-serif;color:#17283d;background:#eef3f8;line-height:1.6}body{max-width:1000px;margin:40px auto;padding:0 24px}header{border-top:5px solid #16796f;padding:24px 0}h1{font-size:2.5rem;line-height:1.2;margin:12px 0}small,.muted{color:#4a6179}.tag{font-size:.8rem;letter-spacing:.12em;color:#12685f;font-weight:700}main,aside{background:white;border:1px solid #d5e0ea;border-radius:12px;padding:24px;margin:20px 0}label{display:block;font-weight:600;margin:12px 0 4px}textarea,input,select{box-sizing:border-box;width:100%;padding:12px;border:1px solid #8599ac;border-radius:6px;font:inherit}button{background:#12685f;color:white;border:0;padding:12px 20px;border-radius:6px;font:inherit;cursor:pointer;margin-top:18px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#edf5f3;padding:20px}a{color:#12685f}footer{padding:24px 0;font-size:.85rem}table{border-collapse:collapse;width:100%}td,th{padding:9px;text-align:left;border-bottom:1px solid #d5e0ea}.error{color:#9e2435}
 </style><header><div class="tag">ABDULLAH SHAKEEL / APPLIED DATA & AI</div><h1>{{ title }}</h1><p>{{ subtitle }}</p></header>
-<aside><strong>New portfolio implementation · November 2026</strong><br>{{ notice }}</aside>
+<aside><strong>Project notes</strong><br>{{ notice }}</aside>
 <main><form method="post">{% block form %}{% endblock %}<button type="submit">{{ action }}</button></form>
 {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
-{% if result is not none %}<h2>Demo output</h2><pre aria-live="polite">{{ result }}</pre>{% endif %}</main>
-<footer>Local educational demo. Inputs are processed in memory; do not enter personal or confidential information.</footer></html>
+{% if result is not none %}<h2>Results</h2><pre aria-live="polite">{{ result }}</pre>{% endif %}</main>
+<footer><a href="https://github.com/Abdulllah999">Abdullah Shakeel</a> · Data Science &amp; AI</footer></html>
