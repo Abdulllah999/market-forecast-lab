@@ -1,80 +1,62 @@
-# Market Forecast Lab
+# Does sentiment improve a next-close forecast?
 
-I compare price-plus-sentiment forecasting with a persistence baseline using chronological, expanding-window evaluation.
+A Python forecasting experiment comparing Ridge regression with a simple “tomorrow equals today” baseline. The interesting result is that the simpler forecast wins on this synthetic series.
 
-**Portfolio project · Abdullah Shakeel**
+**Python · Pandas · Scikit-learn · Flask**
 
-Python application with reproducible setup, tests and evaluation. See [provenance and scope](PROVENANCE.md) for the implementation background.
+[Evaluation](artifacts/evaluation.json) · [Every held-out prediction](artifacts/predictions.csv) · [Leakage tests](test_app.py) · [Running interface](artifacts/demo.png)
 
-![Application preview](artifacts/demo.png)
+## Main finding
 
-## Problem and intended users
+| Model | Held-out MAE, synthetic price units |
+| --- | ---: |
+| Persistence: next close = current close | **0.7356** |
+| Ridge, price features only | 0.8869 |
+| Ridge, price + synthetic sentiment | 0.9177 |
 
-Developers learning leakage-aware forecasting and honest baseline comparison.
+The comparison covers **71 one-step-ahead origins**, using an expanding training window over the final 20% of eligible records. The first fold has 283 training rows. Sentiment does not improve this run. These are artificial prices, not investment returns or evidence of market predictability.
 
-## Features and architecture
+## Evaluation design
 
-Reproducible synthetic market CSV; lagged price/return/volatility features; sentiment available at the forecast origin; expanding-window refits; Ridge model; price-only ablation and persistence baseline; saved per-origin predictions.
+I chose a chronological evaluation because a random split could let future prices influence training. At each close `t`, the model uses only labels available by `t`, predicts the next close, and then advances one origin. StandardScaler is refitted inside each training window. Ridge alpha is fixed at 10; the held-out segment is not used to choose it.
+
+The price-only ablation uses the same model and protocol, removing only sentiment. This separates “does a fitted model help?” from “does sentiment help?” A known weak lagged sentiment relationship is injected by the generator; that still does not guarantee a useful estimated forecast.
 
 ```text
-Timestamped CSV → validation → past-only rolling features → expanding-window StandardScaler + Ridge → MAE comparison → Flask next-close demo.
+Chronological CSV → past-only features → expanding-window fits → predictions → baseline comparison
 ```
 
-A linear regularized model and a persistence baseline make failures easy to inspect. Fixed alpha avoids test-set hyperparameter selection. No complex time-series architecture is justified by this fixture.
+Tests change future inputs and confirm that earlier feature values remain unchanged. They also check next-day label alignment, chronological input validation and finite forecasts.
 
-## Run locally
+## Run and reproduce
 
-Requires Python 3.12. From this repository directory:
+Python 3.12, from this repository:
 
 ```bash
 python -m venv .venv
 # Windows PowerShell: .venv\Scripts\Activate.ps1
 . .venv/bin/activate
-pip install -r requirements.txt
-python app.py
-```
-
-Open http://127.0.0.1:5004 and submit the included fictional example. No credentials or external services are required. `.env.example` documents configuration, but Flask entry points use the documented fixed ports and do not load a .env file. Development servers bind to localhost. They are not production deployments.
-
-## Validate and reproduce evaluation
-
-```bash
 pip install -r requirements-dev.txt
 python -m pytest -q
 python evaluate.py
+python app.py
 ```
 
-`artifacts/evaluation.json` records the actual preparation run. Read its method alongside every metric. CI runs Python checks and evaluation on push/PR; GitHub Actions validates the application on push and pull requests. Actual desktop and mobile-width browser screenshots are in `artifacts/`. Those screenshots show the Python web interface, not a mobile binary.
+Open http://127.0.0.1:5004. The Flask interface displays the latest synthetic origin and a next-close point estimate. No API keys or external downloads are required. GitHub Actions runs the Python tests and evaluation.
 
-## Data and provenance
+![Forecast interface after a local run](artifacts/demo.png)
 
-See data/DATA_CARD.md. 360 artificial business days, seed 19, with an injected weak lagged sentiment relationship. No real tickers or news.
+## Code worth reviewing
 
-See [PROVENANCE.md](PROVENANCE.md) and [LICENSE-REVIEW.md](LICENSE-REVIEW.md). Newly authored source and fixtures use MIT; dependencies retain their own licenses. No CV numerical achievement is represented as a measured result.
+- `core.py`: CSV validation, lagged features, fold construction, price-only ablation and forecasting.
+- `test_app.py`: future-input perturbation and target-alignment checks.
+- `data/synthetic_market.csv`: fixed input series; `core.make_data()` reproduces seed 19.
+- `artifacts/predictions.csv`: actuals and all three predictions for each test origin.
 
-## Limitations and responsible use
+## Limits and next step
 
-This is not a live stock forecasting service. Prices and sentiment are synthetic. News ingestion, actual NLP sentiment, exchange calendars, corporate actions, trading costs and calibrated uncertainty are not implemented. A model can lose to the persistence baseline. No profitable trading claim is supported.
+This does not ingest news or real stock prices. The sentiment feature is generated, not extracted by an NLP service. Exchange calendars, adjusted prices, trading costs and prediction intervals are absent. The local development server is not a deployed service. Docker is provided as a recipe but has not been build-validated.
 
-Inputs are processed in memory; application code does not persist form contents. Standard web-server request metadata may still appear in local logs. Use fictional examples, never confidential employer, applicant, patient or billing information. No authentication or production abuse protection is included; keep this demo local.
+A useful next step is a licensed adjusted-price dataset and timestamped news, with publish-time availability recorded before forecasting. I would freeze a validation protocol and compare across multiple periods before adding model complexity.
 
-## Future improvements
-
-Use a licensed adjusted-price source and timestamped news with publish/ingestion times; freeze a validation protocol, add walk-forward tuning inside training only, and evaluate across regimes. Add prediction intervals and realistic costs before considering strategy research.
-
-## Repository guide
-
-- `core.py`: data/model or matching logic.
-- `app.py`, `templates/`: local web interface.
-- `evaluate.py`: reproducible evaluation and method.
-- `test_app.py`: functional and boundary validation.
-- `.github/workflows/validate.yml`: Python CI definition.
-- `artifacts/`: actual results and screenshots.
-
-## Project summary
-
-Built a leakage-aware forecasting experiment with expanding-window evaluation, a sentiment ablation and a persistence baseline; documented when the simple baseline performs better.
-
-## Dataset loading
-
-`core.load_data(path)` accepts a chronological CSV with `date`, positive `close`, and `sentiment` in [-1,1], at least 100 rows, finite numbers and no duplicate dates. Supply only legally obtained data with origin-time availability recorded. `core.make_data()` reproduces the included fixture. `artifacts/predictions.csv` contains every held-out origin and prediction.
+Source code is MIT; the market fixture is authored synthetic data. See [data card](data/DATA_CARD.md), [provenance](PROVENANCE.md) and [licensing notes](LICENSE-REVIEW.md).
